@@ -4,12 +4,23 @@ import banner from './assets/banner-main.png'
 import './App.css'
 import AvailablePlayers from './components/AvailablePlayers/AvailablePlayers'
 import SelectedPlayers from './components/SelectedPlayers/SelectedPlayers'
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 
 const fetchPlayers = fetch('/public/players.json')
 .then(res => res.json())
 
 function App() {
+  const [toggle, setToggle] = useState(true);
+  const [availableBalance, setAvailableBalance] = useState(30000000);
+  const [purchasedPlayers, setPurchasedPlayers] = useState([]);
+
+  const removePlayer = () => {
+    if(purchasedPlayers.length > 0){
+      const removedPlayer = purchasedPlayers[purchasedPlayers.length -1];
+      setPurchasedPlayers(purchasedPlayers.slice(0, -1));
+      setAvailableBalance(availableBalance + removedPlayer.marketPrice);
+    }
+  }
 
   return (
     <>
@@ -24,8 +35,7 @@ function App() {
           <li>Schedules</li>
         </ul>
         <div className='flex items-center gap-2 text-lg'>
-          <span>600000</span>
-          <span>Coins</span>
+          <span>{availableBalance}</span>
           <img className='w-[20px]' src={imgDollar} alt="" />
         </div>
       </div>
@@ -48,25 +58,24 @@ function App() {
 
     {/* Available Players Title Section */}
 
-    <div className='container mx-auto flex justify-between mt-10'>
-      <h1 className='text-xl font-semibold'>Available Players</h1>
-      <div className='space-x-6 text-xl'>
-        <button>Available</button>
-        <button>Selected</button>
+    <div className='container mx-auto flex justify-between items-center mt-10'>
+      <h1 className='text-xl font-semibold'>{
+        toggle === true ? "Available Players":`Selected Players (${purchasedPlayers.length}/12)`
+        }</h1>
+      <div className='text-xl'>
+        <button onClick={()=>setToggle(true)} className={`px-5 py-2 border-1 border-gray-400 rounded-l-xl border-r-0 ${toggle === true?"bg-[#e7fe29]":""}`}>Available</button>
+        <button onClick={()=>setToggle(false)} className={`px-5 py-2 border-1 border-gray-400 rounded-r-xl border-l-0 ${toggle === false?"bg-[#e7fe29]":""}`}>Selected <span>{purchasedPlayers.length}</span></button>
       </div>
     </div>
-{/* Available Players Section */}
-<Suspense fallback={<p className='text-center mt-5'>Please Wait Data are Coming.....</p>}>
-  <AvailablePlayers fetchPlayers={fetchPlayers}>
+    {
+      toggle === true ?<Suspense fallback={<p className='text-center mt-5'>Please Wait Data are Coming.....</p>}>
+  <AvailablePlayers purchasedPlayers={purchasedPlayers} setPurchasedPlayers={setPurchasedPlayers} availableBalance={availableBalance} setAvailableBalance={setAvailableBalance} fetchPlayers={fetchPlayers}>
 
-</AvailablePlayers>
-</Suspense>
-
-{/* Selected Players Section */}
-<SelectedPlayers>
+</AvailablePlayers >
+</Suspense> : <SelectedPlayers removePlayer={removePlayer} purchasedPlayers={purchasedPlayers}>
 
 </SelectedPlayers>
-
+    } 
     </>
   )
 }

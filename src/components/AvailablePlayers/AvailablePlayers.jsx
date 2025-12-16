@@ -1,8 +1,17 @@
-import React, { use } from 'react';
+import { use, useState } from 'react';
 import iconimg from '../../assets/Group.png'
 
-const AvailablePlayers = ({fetchPlayers}) => {
+const AvailablePlayers = ({fetchPlayers, setAvailableBalance, availableBalance, purchasedPlayers, setPurchasedPlayers}) => {
     const PlayerData = use(fetchPlayers) 
+    const [selectedPlayers, setSelectedPlayers] = useState([])
+
+    const handleSelectPlayer = (player) => {
+        if(availableBalance < player.marketPrice){
+            alert("Insufficient Balance to select this player.")
+            return;
+        }
+        }
+
     return (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mt-5 mb-10 container mx-auto'>
             {
@@ -21,7 +30,12 @@ const AvailablePlayers = ({fetchPlayers}) => {
                 <div className='font-semibold flex justify-between my-5 gap-5'>
                     <span>{player.battingStyle}</span> <span>{player.bowlingStyle}</span>
                 </div>
-                <div className='font-semibold flex justify-between'><h1>${player.marketPrice}</h1> <button>Choose players</button></div>
+                <div className='font-semibold flex justify-between items-center'><h1>${player.marketPrice}</h1> <button onClick={() => {
+                    handleSelectPlayer(player)
+                    setSelectedPlayers([...selectedPlayers, player.id])
+                    setAvailableBalance(availableBalance - player.marketPrice)
+                    setPurchasedPlayers([...purchasedPlayers, player])
+                }} className='p-2 bg-gray-100 rounded-lg text-sm'>{selectedPlayers.includes(player.id) ? "Selected" : "Choose Player"}</button></div>
             </div>
                     </div>
                 )
